@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { User } from "../infrastructure/Entities/User";
+import { User } from "../infrastructure/entities/User.entity";
+import { AuthController } from "./controllers/auth.controller";
+import { PostgresUserRepository } from "../infrastructure/User/PostgresUserRepository";
 
 @Module({
   imports: [
@@ -14,9 +15,21 @@ import { User } from "../infrastructure/Entities/User";
       password: process.env.DB_PASSWORD,
       database: 'roar',
       models: [User],
+      repositoryMode: true,
     })
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AuthController],
+  providers: [
+    AppService,
+    {
+      provide: "IUserRepository",
+      useClass: PostgresUserRepository
+    },
+    {
+      provide: 'UsersRepository',
+      useValue: User,
+    },
+
+  ],
 })
 export class AppModule {}
